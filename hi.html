@@ -1,0 +1,1217 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Pokemon Type Classification Game</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Arial', sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .game-container {
+            background: white;
+            border-radius: 20px;
+            padding: 30px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.2);
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+
+        h1 {
+            text-align: center;
+            color: #333;
+            margin-bottom: 30px;
+            font-size: 2.5em;
+        }
+
+        .method-selector {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+
+        .method-btn {
+            padding: 15px 30px;
+            margin: 0 10px;
+            border: none;
+            border-radius: 30px;
+            font-size: 18px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            background: #e0e0e0;
+            color: #666;
+        }
+
+        .method-btn.active {
+            background: linear-gradient(45deg, #2196f3, #21cbf3);
+            color: white;
+            transform: scale(1.05);
+            box-shadow: 0 5px 20px rgba(0,0,0,0.2);
+        }
+
+        .method-content {
+            display: none;
+        }
+
+        .method-content.active {
+            display: block;
+        }
+
+        /* Method 1 Styles */
+        .single-type-container {
+            max-width: 800px;
+            margin: 0 auto;
+        }
+
+        .grid-container {
+            display: grid;
+            grid-template-columns: repeat(3, 120px);
+            grid-template-rows: repeat(3, 120px);
+            gap: 10px;
+            margin: 20px auto;
+            width: fit-content;
+        }
+
+        .grid-cell {
+            border: 3px solid #ddd;
+            border-radius: 15px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            background: #f8f9fa;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .grid-cell:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+        }
+
+        .grid-cell.center {
+            background: linear-gradient(45deg, #f093fb 0%, #f5576c 100%);
+            border-color: #f5576c;
+        }
+
+        .grid-cell.occupied {
+            background: #e3f2fd;
+            border-color: #2196f3;
+        }
+
+        .cell-number {
+            position: absolute;
+            top: 5px;
+            right: 5px;
+            font-size: 14px;
+            font-weight: bold;
+            color: #999;
+            background: rgba(255, 255, 255, 0.8);
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 10;
+            pointer-events: none;
+        }
+
+        .feature-card {
+            text-align: center;
+            padding: 10px;
+            font-size: 14px;
+            font-weight: bold;
+            color: #333;
+            width: 100%;
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            transition: transform 0.6s;
+            transform-style: preserve-3d;
+            position: relative;
+        }
+
+        .feature-card.flipped {
+            transform: rotateY(180deg);
+        }
+
+        .card-front, .card-back {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            backface-visibility: hidden;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            border-radius: 10px;
+            padding: 5px;
+        }
+
+        .card-back {
+            transform: rotateY(180deg);
+            background: #ffebee;
+            color: #d32f2f;
+        }
+
+        .card-front {
+            background: #e8f5e9;
+            color: #2e7d32;
+        }
+
+        .feature-icon {
+            font-size: 32px;
+            margin-bottom: 5px;
+        }
+
+        /* Method 2 Styles */
+        .multi-type-container {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 30px;
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        .type-grid-wrapper {
+            background: #f8f9fa;
+            border-radius: 15px;
+            padding: 20px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+
+        .type-grid-wrapper h3 {
+            text-align: center;
+            margin-bottom: 15px;
+            font-size: 20px;
+        }
+
+        .type-grid-wrapper.fire h3 { color: #ff6b6b; }
+        .type-grid-wrapper.water h3 { color: #4ecdc4; }
+        .type-grid-wrapper.grass h3 { color: #8bc34a; }
+        .type-grid-wrapper.dragon h3 { color: #7c4dff; }
+
+        .small-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 80px);
+            grid-template-rows: repeat(3, 80px);
+            gap: 5px;
+            margin: 0 auto;
+            width: fit-content;
+        }
+
+        .small-grid .grid-cell {
+            border-width: 2px;
+            font-size: 12px;
+        }
+
+        .small-grid .feature-icon {
+            font-size: 24px;
+        }
+
+        .small-grid .cell-number {
+            width: 16px;
+            height: 16px;
+            font-size: 11px;
+            top: 2px;
+            right: 2px;
+        }
+
+        .type-selector {
+            text-align: center;
+            margin-bottom: 20px;
+        }
+
+        .type-btn {
+            padding: 12px 24px;
+            margin: 5px;
+            border: none;
+            border-radius: 25px;
+            font-size: 16px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            color: white;
+            text-transform: uppercase;
+        }
+
+        .type-btn.fire {
+            background: linear-gradient(45deg, #ff6b6b, #ff8787);
+        }
+
+        .type-btn.water {
+            background: linear-gradient(45deg, #4ecdc4, #44a3aa);
+        }
+
+        .type-btn.grass {
+            background: linear-gradient(45deg, #8bc34a, #7cb342);
+        }
+
+        .type-btn.dragon {
+            background: linear-gradient(45deg, #7c4dff, #b388ff);
+        }
+
+        .type-btn.selected {
+            transform: scale(1.1);
+            box-shadow: 0 5px 20px rgba(0,0,0,0.3);
+        }
+
+        .feature-bank {
+            background: #f5f5f5;
+            border-radius: 15px;
+            padding: 20px;
+            margin-top: 20px;
+        }
+
+        .feature-bank h3 {
+            color: #555;
+            margin-bottom: 15px;
+        }
+
+        .feature-list {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            justify-content: center;
+        }
+
+        .feature-item {
+            background: white;
+            border: 2px solid #ddd;
+            border-radius: 10px;
+            padding: 10px 15px;
+            cursor: move;
+            transition: all 0.3s ease;
+            font-weight: 500;
+            color: #666;
+        }
+
+        .feature-item:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+            border-color: #2196f3;
+        }
+
+        .feature-item.dragging {
+            opacity: 0.5;
+        }
+
+        .controls {
+            margin-top: 30px;
+            text-align: center;
+        }
+
+        .control-btn {
+            padding: 12px 30px;
+            margin: 0 10px;
+            border: none;
+            border-radius: 25px;
+            font-size: 16px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .simulate-btn {
+            background: linear-gradient(45deg, #2196f3, #21cbf3);
+            color: white;
+        }
+
+        .reset-btn {
+            background: linear-gradient(45deg, #ff6b6b, #ff8787);
+            color: white;
+        }
+
+        .control-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+        }
+
+        .results-section {
+            margin-top: 30px;
+            padding: 20px;
+            background: #f8f9fa;
+            border-radius: 15px;
+        }
+
+        .results-section h3 {
+            color: #333;
+            margin-bottom: 15px;
+        }
+
+        .confusion-matrix {
+            margin: 20px 0;
+            overflow-x: auto;
+        }
+
+        .confusion-matrix table {
+            border-collapse: collapse;
+            margin: 0 auto;
+            background: white;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+
+        .confusion-matrix th, .confusion-matrix td {
+            border: 1px solid #ddd;
+            padding: 12px;
+            text-align: center;
+            min-width: 80px;
+        }
+
+        .confusion-matrix th {
+            background: #2196f3;
+            color: white;
+            font-weight: bold;
+        }
+
+        .confusion-matrix td {
+            font-weight: 600;
+        }
+
+        .correct-prediction {
+            background: #c8e6c9;
+            color: #2e7d32;
+        }
+
+        .incorrect-prediction {
+            background: #ffcdd2;
+            color: #c62828;
+        }
+
+        .pokemon-results {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+            gap: 15px;
+            margin-top: 15px;
+        }
+
+        .pokemon-card {
+            background: white;
+            border-radius: 10px;
+            padding: 15px;
+            text-align: center;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            transition: transform 0.3s ease;
+        }
+
+        .pokemon-card:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 5px 20px rgba(0,0,0,0.15);
+        }
+
+        .pokemon-name {
+            font-weight: bold;
+            color: #333;
+            margin-bottom: 5px;
+        }
+
+        .pokemon-prediction {
+            font-size: 14px;
+            margin: 5px 0;
+        }
+
+        .match { color: #4caf50; }
+        .no-match { color: #f44336; }
+        .multiple-match { color: #ff9800; }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 20px;
+            margin: 20px 0;
+        }
+
+        .stat-card {
+            background: white;
+            border-radius: 10px;
+            padding: 20px;
+            text-align: center;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+
+        .stat-value {
+            font-size: 36px;
+            font-weight: bold;
+            color: #2196f3;
+        }
+
+        .stat-label {
+            color: #666;
+            margin-top: 5px;
+        }
+
+        .instructions {
+            background: #e3f2fd;
+            border-radius: 10px;
+            padding: 20px;
+            margin-bottom: 20px;
+            color: #1976d2;
+        }
+
+        .instructions h3 {
+            margin-bottom: 10px;
+        }
+
+        .instructions ul {
+            margin-left: 20px;
+        }
+
+        .instructions li {
+            margin-bottom: 5px;
+        }
+    </style>
+</head>
+<body>
+    <div class="game-container">
+        <h1>🎮 Pokémon AI Adventure - 1. Manual Rules </h1>
+        
+        <div class="method-selector">
+            <button class="method-btn active" onclick="selectMethod(1)">Method 1: Single Type Binary Classification</button>
+            <button class="method-btn" onclick="selectMethod(2)">Method 2: Multi-Type Classification</button>
+        </div>
+
+        <!-- Method 1: Single Type -->
+        <div id="method1" class="method-content active">
+            <div class="single-type-container">
+                <div class="instructions">
+                    <h3>Method 1: Binary Classification</h3>
+                    <ul>
+                        <li>Select a Pokemon type to classify (e.g., Fire)</li>
+                        <li>Define rules: This will predict "Is Fire" or "Not Fire"</li>
+                        <li>Drag features to the grid and flip for LOW values</li>
+                        <li>Click Simulate and System will show result</li>
+                    </ul>
+                </div>
+
+                <div class="type-selector">
+                    <button class="type-btn fire" onclick="selectType('fire')">🔥 Fire</button>
+                    <button class="type-btn water" onclick="selectType('water')">💧 Water</button>
+                    <button class="type-btn grass" onclick="selectType('grass')">🌿 Grass</button>
+                    <button class="type-btn dragon" onclick="selectType('dragon')">🐉 Dragon</button>
+                </div>
+
+                <div class="grid-container">
+                    <div class="grid-cell" data-row="0" data-col="0" ondrop="dropMethod1(event)" ondragover="allowDrop(event)">
+                        <span class="cell-number">6</span>
+                    </div>
+                    <div class="grid-cell" data-row="0" data-col="1" ondrop="dropMethod1(event)" ondragover="allowDrop(event)">
+                        <span class="cell-number">7</span>
+                    </div>
+                    <div class="grid-cell" data-row="0" data-col="2" ondrop="dropMethod1(event)" ondragover="allowDrop(event)">
+                        <span class="cell-number">8</span>
+                    </div>
+                    <div class="grid-cell" data-row="1" data-col="0" ondrop="dropMethod1(event)" ondragover="allowDrop(event)">
+                        <span class="cell-number">5</span>
+                    </div>
+                    <div class="grid-cell center" data-row="1" data-col="1">
+                        <span id="selected-type" style="font-size: 24px; color: white;">?</span>
+                    </div>
+                    <div class="grid-cell" data-row="1" data-col="2" ondrop="dropMethod1(event)" ondragover="allowDrop(event)">
+                        <span class="cell-number">1</span>
+                    </div>
+                    <div class="grid-cell" data-row="2" data-col="0" ondrop="dropMethod1(event)" ondragover="allowDrop(event)">
+                        <span class="cell-number">4</span>
+                    </div>
+                    <div class="grid-cell" data-row="2" data-col="1" ondrop="dropMethod1(event)" ondragover="allowDrop(event)">
+                        <span class="cell-number">3</span>
+                    </div>
+                    <div class="grid-cell" data-row="2" data-col="2" ondrop="dropMethod1(event)" ondragover="allowDrop(event)">
+                        <span class="cell-number">2</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Method 2: Multi Type -->
+        <div id="method2" class="method-content">
+            <div class="instructions">
+                <h3>Method 2: Multi-Type Classification</h3>
+                <ul>
+                    <li>Define rules for all 4 types simultaneously</li>
+                    <li>Each grid represents one Pokemon type</li>
+                    <li>Drag features to each type's grid to define that type's characteristics</li>
+                    <li>The system will classify each Pokemon and show matches, no matches, and multiple matches</li>
+                </ul>
+            </div>
+
+            <div class="multi-type-container">
+                <div class="type-grid-wrapper fire">
+                    <h3>🔥 Fire Type</h3>
+                    <div class="small-grid" data-type="fire">
+                        <div class="grid-cell" ondrop="dropMethod2(event, 'fire')" ondragover="allowDrop(event)">
+                            <span class="cell-number">6</span>
+                        </div>
+                        <div class="grid-cell" ondrop="dropMethod2(event, 'fire')" ondragover="allowDrop(event)">
+                            <span class="cell-number">7</span>
+                        </div>
+                        <div class="grid-cell" ondrop="dropMethod2(event, 'fire')" ondragover="allowDrop(event)">
+                            <span class="cell-number">8</span>
+                        </div>
+                        <div class="grid-cell" ondrop="dropMethod2(event, 'fire')" ondragover="allowDrop(event)">
+                            <span class="cell-number">5</span>
+                        </div>
+                        <div class="grid-cell center">🔥</div>
+                        <div class="grid-cell" ondrop="dropMethod2(event, 'fire')" ondragover="allowDrop(event)">
+                            <span class="cell-number">1</span>
+                        </div>
+                        <div class="grid-cell" ondrop="dropMethod2(event, 'fire')" ondragover="allowDrop(event)">
+                            <span class="cell-number">4</span>
+                        </div>
+                        <div class="grid-cell" ondrop="dropMethod2(event, 'fire')" ondragover="allowDrop(event)">
+                            <span class="cell-number">3</span>
+                        </div>
+                        <div class="grid-cell" ondrop="dropMethod2(event, 'fire')" ondragover="allowDrop(event)">
+                            <span class="cell-number">2</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="type-grid-wrapper water">
+                    <h3>💧 Water Type</h3>
+                    <div class="small-grid" data-type="water">
+                        <div class="grid-cell" ondrop="dropMethod2(event, 'water')" ondragover="allowDrop(event)">
+                            <span class="cell-number">6</span>
+                        </div>
+                        <div class="grid-cell" ondrop="dropMethod2(event, 'water')" ondragover="allowDrop(event)">
+                            <span class="cell-number">7</span>
+                        </div>
+                        <div class="grid-cell" ondrop="dropMethod2(event, 'water')" ondragover="allowDrop(event)">
+                            <span class="cell-number">8</span>
+                        </div>
+                        <div class="grid-cell" ondrop="dropMethod2(event, 'water')" ondragover="allowDrop(event)">
+                            <span class="cell-number">5</span>
+                        </div>
+                        <div class="grid-cell center">💧</div>
+                        <div class="grid-cell" ondrop="dropMethod2(event, 'water')" ondragover="allowDrop(event)">
+                            <span class="cell-number">1</span>
+                        </div>
+                        <div class="grid-cell" ondrop="dropMethod2(event, 'water')" ondragover="allowDrop(event)">
+                            <span class="cell-number">4</span>
+                        </div>
+                        <div class="grid-cell" ondrop="dropMethod2(event, 'water')" ondragover="allowDrop(event)">
+                            <span class="cell-number">3</span>
+                        </div>
+                        <div class="grid-cell" ondrop="dropMethod2(event, 'water')" ondragover="allowDrop(event)">
+                            <span class="cell-number">2</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="type-grid-wrapper grass">
+                    <h3>🌿 Grass Type</h3>
+                    <div class="small-grid" data-type="grass">
+                        <div class="grid-cell" ondrop="dropMethod2(event, 'grass')" ondragover="allowDrop(event)">
+                            <span class="cell-number">6</span>
+                        </div>
+                        <div class="grid-cell" ondrop="dropMethod2(event, 'grass')" ondragover="allowDrop(event)">
+                            <span class="cell-number">7</span>
+                        </div>
+                        <div class="grid-cell" ondrop="dropMethod2(event, 'grass')" ondragover="allowDrop(event)">
+                            <span class="cell-number">8</span>
+                        </div>
+                        <div class="grid-cell" ondrop="dropMethod2(event, 'grass')" ondragover="allowDrop(event)">
+                            <span class="cell-number">5</span>
+                        </div>
+                        <div class="grid-cell center">🌿</div>
+                        <div class="grid-cell" ondrop="dropMethod2(event, 'grass')" ondragover="allowDrop(event)">
+                            <span class="cell-number">1</span>
+                        </div>
+                        <div class="grid-cell" ondrop="dropMethod2(event, 'grass')" ondragover="allowDrop(event)">
+                            <span class="cell-number">4</span>
+                        </div>
+                        <div class="grid-cell" ondrop="dropMethod2(event, 'grass')" ondragover="allowDrop(event)">
+                            <span class="cell-number">3</span>
+                        </div>
+                        <div class="grid-cell" ondrop="dropMethod2(event, 'grass')" ondragover="allowDrop(event)">
+                            <span class="cell-number">2</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="type-grid-wrapper dragon">
+                    <h3>🐉 Dragon Type</h3>
+                    <div class="small-grid" data-type="dragon">
+                        <div class="grid-cell" ondrop="dropMethod2(event, 'dragon')" ondragover="allowDrop(event)">
+                            <span class="cell-number">6</span>
+                        </div>
+                        <div class="grid-cell" ondrop="dropMethod2(event, 'dragon')" ondragover="allowDrop(event)">
+                            <span class="cell-number">7</span>
+                        </div>
+                        <div class="grid-cell" ondrop="dropMethod2(event, 'dragon')" ondragover="allowDrop(event)">
+                            <span class="cell-number">8</span>
+                        </div>
+                        <div class="grid-cell" ondrop="dropMethod2(event, 'dragon')" ondragover="allowDrop(event)">
+                            <span class="cell-number">5</span>
+                        </div>
+                        <div class="grid-cell center">🐉</div>
+                        <div class="grid-cell" ondrop="dropMethod2(event, 'dragon')" ondragover="allowDrop(event)">
+                            <span class="cell-number">1</span>
+                        </div>
+                        <div class="grid-cell" ondrop="dropMethod2(event, 'dragon')" ondragover="allowDrop(event)">
+                            <span class="cell-number">4</span>
+                        </div>
+                        <div class="grid-cell" ondrop="dropMethod2(event, 'dragon')" ondragover="allowDrop(event)">
+                            <span class="cell-number">3</span>
+                        </div>
+                        <div class="grid-cell" ondrop="dropMethod2(event, 'dragon')" ondragover="allowDrop(event)">
+                            <span class="cell-number">2</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="feature-bank">
+            <h3>Feature Cards (Drag to grids)</h3>
+            <div class="feature-list" id="feature-list">
+                <div class="feature-item" draggable="true" ondragstart="drag(event)" data-feature="HasWings">🦅 Wings</div>
+                <div class="feature-item" draggable="true" ondragstart="drag(event)" data-feature="Speed">⚡ Speed</div>
+                <div class="feature-item" draggable="true" ondragstart="drag(event)" data-feature="Attack">⚔️ Attack</div>
+                <div class="feature-item" draggable="true" ondragstart="drag(event)" data-feature="Defense">🛡️ Defense</div>
+                <div class="feature-item" draggable="true" ondragstart="drag(event)" data-feature="Weight">⚖️ Weight</div>
+                <div class="feature-item" draggable="true" ondragstart="drag(event)" data-feature="Height">📏 Height</div>
+                <div class="feature-item" draggable="true" ondragstart="drag(event)" data-feature="HabitatAltitude">🏔️ Altitude</div>
+                <div class="feature-item" draggable="true" ondragstart="drag(event)" data-feature="HabitatTemperature">🌡️ Temperature</div>
+            </div>
+        </div>
+
+        <div class="controls">
+            <button class="control-btn simulate-btn" onclick="simulate()">🎯 Simulate</button>
+            <button class="control-btn reset-btn" onclick="resetGame()">🔄 Reset</button>
+        </div>
+
+        <div class="results-section" id="results-section" style="display: none;">
+            <h3>Classification Results</h3>
+            <div id="results-content"></div>
+        </div>
+    </div>
+
+    <script>
+        // Game state
+        let currentMethod = 1;
+        let selectedType = null;
+        let method1Rules = {};
+        let method2Rules = {
+            fire: {},
+            water: {},
+            grass: {},
+            dragon: {}
+        };
+        let pokemonDataset = [];
+
+        // Feature icons mapping
+        const featureIcons = {
+            'HasWings': '🦅',
+            'Speed': '⚡',
+            'Attack': '⚔️',
+            'Defense': '🛡️',
+            'Weight': '⚖️',
+            'Height': '📏',
+            'HabitatAltitude': '🏔️',
+            'HabitatTemperature': '🌡️'
+        };
+
+        function isFeatureHigh(featureName, rawValue) {
+                if (featureName === 'HasWings') {
+                    return rawValue === 1;
+                }
+                return rawValue > 5;
+            }
+
+        // Initialize with sample Pokemon data
+        function initializePokemonData() {
+            // Extended dataset with binary Color (1 = typical color for type, 0 = not typical)
+            pokemonDataset = [
+                // Original dataset
+                {name: "Charizard", HasWings: 1, Speed: 8, Attack: 9, Defense: 7, Weight: 9, Height: 8, HabitatAltitude: 7, HabitatTemperature: 9, CorrectType: "fire"},
+                {name: "Blastoise", HasWings: 0, Speed: 5, Attack: 7, Defense: 9, Weight: 8, Height: 7, HabitatAltitude: 3, HabitatTemperature: 4, CorrectType: "water"},
+                {name: "Venusaur", HasWings: 0, Speed: 4, Attack: 6, Defense: 8, Weight: 9, Height: 8, HabitatAltitude: 4, HabitatTemperature: 6, CorrectType: "grass"},
+                {name: "Dragonite", HasWings: 1, Speed: 7, Attack: 9, Defense: 8, Weight: 9, Height: 9, HabitatAltitude: 8, HabitatTemperature: 5, CorrectType: "dragon"},
+                {name: "Arcanine", HasWings: 0, Speed: 9, Attack: 8, Defense: 6, Weight: 7, Height: 8, HabitatAltitude: 5, HabitatTemperature: 8, CorrectType: "fire"},
+                {name: "Lapras", HasWings: 0, Speed: 4, Attack: 6, Defense: 8, Weight: 9, Height: 9, HabitatAltitude: 2, HabitatTemperature: 2, CorrectType: "water"},
+                {name: "Sceptile", HasWings: 0, Speed: 9, Attack: 7, Defense: 5, Weight: 5, Height: 7, HabitatAltitude: 5, HabitatTemperature: 7, CorrectType: "grass"},
+                {name: "Salamence", HasWings: 1, Speed: 8, Attack: 9, Defense: 7, Weight: 8, Height: 7, HabitatAltitude: 9, HabitatTemperature: 6, CorrectType: "dragon"},
+                {name: "Infernape", HasWings: 0, Speed: 8, Attack: 8, Defense: 5, Weight: 5, Height: 6, HabitatAltitude: 6, HabitatTemperature: 8, CorrectType: "fire"},
+                {name: "Gyarados", HasWings: 0, Speed: 6, Attack: 9, Defense: 7, Weight: 9, Height: 10, HabitatAltitude: 3, HabitatTemperature: 4, CorrectType: "water"},
+                {name: "Leafeon", HasWings: 0, Speed: 7, Attack: 6, Defense: 7, Weight: 3, Height: 4, HabitatAltitude: 4, HabitatTemperature: 6, CorrectType: "grass"},
+                {name: "Garchomp", HasWings: 0, Speed: 8, Attack: 9, Defense: 8, Weight: 8, Height: 8, HabitatAltitude: 7, HabitatTemperature: 5, CorrectType: "dragon"},
+                
+                // Additional Fire Pokemon
+                {name: "Moltres", HasWings: 1, Speed: 4, Attack: 8, Defense: 2, Weight: 2, Height: 2, HabitatAltitude: 9, HabitatTemperature: 10, CorrectType: "fire"},
+                {name: "Typhlosion", HasWings: 0, Speed: 7, Attack: 8, Defense: 3, Weight: 3, Height: 3, HabitatAltitude: 5, HabitatTemperature: 9, CorrectType: "fire"},
+                {name: "Blaziken", HasWings: 0, Speed: 5, Attack: 9, Defense: 2, Weight: 2, Height: 5, HabitatAltitude: 4, HabitatTemperature: 8, CorrectType: "fire"},
+                {name: "Houndoom", HasWings: 0, Speed: 6, Attack: 9, Defense: 3, Weight: 3, Height: 2, HabitatAltitude: 5, HabitatTemperature: 8, CorrectType: "fire"},
+                {name: "Camerupt", HasWings: 0, Speed: 3, Attack: 8, Defense: 2, Weight: 2, Height: 3, HabitatAltitude: 6, HabitatTemperature: 4, CorrectType: "fire"},
+                {name: "Magmortar", HasWings: 0, Speed: 3, Attack: 9, Defense: 3, Weight: 3, Height: 5, HabitatAltitude: 3, HabitatTemperature: 10, CorrectType: "fire"},
+                
+                // Additional Water Pokemon
+                {name: "Vaporeon", HasWings: 1, Speed: 6, Attack: 2, Defense: 8, Weight: 3, Height: 4, HabitatAltitude: 2, HabitatTemperature: 3, CorrectType: "water"},
+                {name: "Golduck", HasWings: 0, Speed: 7, Attack: 3, Defense: 7, Weight: 7, Height: 7, HabitatAltitude: 3, HabitatTemperature: 4, CorrectType: "water"},
+                {name: "Tentacruel", HasWings: 0, Speed: 3, Attack: 2, Defense: 7, Weight: 6, Height: 7, HabitatAltitude: 1, HabitatTemperature: 3, CorrectType: "water"},
+                {name: "Slowbro", HasWings: 0, Speed: 2, Attack: 3, Defense: 9, Weight: 8, Height: 7, HabitatAltitude: 2, HabitatTemperature: 4, CorrectType: "water"},
+                {name: "Milotic", HasWings: 0, Speed: 4, Attack: 2, Defense: 7, Weight: 8, Height: 10, HabitatAltitude: 3, HabitatTemperature: 4, CorrectType: "water"},
+                {name: "Wailord", HasWings: 0, Speed: 5, Attack: 3, Defense: 5, Weight: 10, Height: 10, HabitatAltitude: 1, HabitatTemperature: 3, CorrectType: "water"},
+                
+                // Additional Grass Pokemon
+                {name: "Vileplume", HasWings: 0, Speed: 4, Attack: 2, Defense: 7, Weight: 1, Height: 5, HabitatAltitude: 5, HabitatTemperature: 3, CorrectType: "grass"},
+                {name: "Exeggutor", HasWings: 0, Speed: 4, Attack: 1, Defense: 7, Weight: 4, Height: 8, HabitatAltitude: 6, HabitatTemperature: 2, CorrectType: "grass"},
+                {name: "Tangrowth", HasWings: 0, Speed: 4, Attack: 2, Defense: 9, Weight: 4, Height: 8, HabitatAltitude: 7, HabitatTemperature: 4, CorrectType: "grass"},
+                {name: "Meganium", HasWings: 0, Speed: 6, Attack: 3, Defense: 8, Weight: 3, Height: 7, HabitatAltitude: 4, HabitatTemperature: 2, CorrectType: "grass"},
+                {name: "Breloom", HasWings: 0, Speed: 6, Attack: 1, Defense: 6, Weight: 4, Height: 5, HabitatAltitude: 8, HabitatTemperature: 3, CorrectType: "grass"},
+                {name: "Roserade", HasWings: 0, Speed: 7, Attack: 2, Defense: 10, Weight: 2, Height: 9, HabitatAltitude: 5, HabitatTemperature: 4, CorrectType: "grass"},
+                
+                // Additional Dragon Pokemon
+                {name: "Kingdra", HasWings: 0, Speed: 7, Attack: 8, Defense: 8, Weight: 8, Height: 7, HabitatAltitude: 9, HabitatTemperature: 4, CorrectType: "dragon"},
+                {name: "Altaria", HasWings: 1, Speed: 6, Attack: 6, Defense: 8, Weight: 6, Height: 5, HabitatAltitude: 9, HabitatTemperature: 3, CorrectType: "dragon"},
+                {name: "Flygon", HasWings: 1, Speed: 8, Attack: 8, Defense: 6, Weight: 8, Height: 8, HabitatAltitude: 7, HabitatTemperature: 1, CorrectType: "dragon"},
+                {name: "Rayquaza", HasWings: 1, Speed: 9, Attack: 10, Defense: 7, Weight: 9, Height: 10, HabitatAltitude: 10, HabitatTemperature: 5, CorrectType: "dragon"},
+                {name: "Hydreigon", HasWings: 1, Speed: 8, Attack: 9, Defense: 7, Weight: 8, Height: 7, HabitatAltitude: 7, HabitatTemperature: 1, CorrectType: "dragon"},
+                {name: "Goodra", HasWings: 1, Speed: 9, Attack: 8, Defense: 9, Weight: 9, Height: 8, HabitatAltitude: 4, HabitatTemperature: 2, CorrectType: "dragon"}
+            ];
+        }
+
+        // Method selection
+        function selectMethod(method) {
+            currentMethod = method;
+            document.querySelectorAll('.method-btn').forEach(btn => btn.classList.remove('active'));
+            document.querySelectorAll('.method-content').forEach(content => content.classList.remove('active'));
+            
+            event.target.classList.add('active');
+            document.getElementById(`method${method}`).classList.add('active');
+            
+            // Hide results when switching methods
+            document.getElementById('results-section').style.display = 'none';
+        }
+
+        // Type selection for Method 1
+        function selectType(type) {
+            selectedType = type;
+            const typeBtn = document.querySelectorAll('.type-btn');
+            typeBtn.forEach(btn => btn.classList.remove('selected'));
+            event.target.classList.add('selected');
+            
+            const typeEmojis = {
+                'fire': '🔥',
+                'water': '💧',
+                'grass': '🌿',
+                'dragon': '🐉'
+            };
+            
+            document.getElementById('selected-type').textContent = typeEmojis[type];
+        }
+
+        // Drag and drop functions
+        function allowDrop(ev) {
+            ev.preventDefault();
+        }
+
+        function drag(ev) {
+            ev.dataTransfer.setData("text", ev.target.dataset.feature);
+            ev.target.classList.add('dragging');
+        }
+
+        // Drop for Method 1
+        function dropMethod1(ev) {
+            ev.preventDefault();
+            const feature = ev.dataTransfer.getData("text");
+            const cell = ev.target.closest('.grid-cell');
+            
+            if (cell && !cell.classList.contains('center') && !cell.querySelector('.feature-card')) {
+                const row = parseInt(cell.dataset.row);
+                const col = parseInt(cell.dataset.col);
+                
+                createFeatureCard(cell, feature, () => flipCard(cell.querySelector('.feature-card'), row, col, 'method1'));
+                
+                method1Rules[`${row}-${col}`] = {
+                    feature: feature,
+                    isHigh: true
+                };
+            }
+            
+            document.querySelectorAll('.dragging').forEach(item => {
+                item.classList.remove('dragging');
+            });
+        }
+
+        // Drop for Method 2
+        function dropMethod2(ev, type) {
+            ev.preventDefault();
+            const feature = ev.dataTransfer.getData("text");
+            const cell = ev.target.closest('.grid-cell');
+            
+            if (cell && !cell.classList.contains('center') && !cell.querySelector('.feature-card')) {
+                const cellIndex = Array.from(cell.parentElement.children).indexOf(cell);
+                
+                createFeatureCard(cell, feature, () => flipCardMethod2(cell.querySelector('.feature-card'), cellIndex, type));
+                
+                method2Rules[type][cellIndex] = {
+                    feature: feature,
+                    isHigh: true
+                };
+            }
+            
+            document.querySelectorAll('.dragging').forEach(item => {
+                item.classList.remove('dragging');
+            });
+        }
+
+        // Create feature card
+        function createFeatureCard(cell, feature, flipHandler) {
+            const card = document.createElement('div');
+            card.className = 'feature-card';
+            card.dataset.feature = feature;
+            card.onclick = flipHandler;
+            
+            card.innerHTML = `
+                <div class="card-front">
+                    <div class="feature-icon">${featureIcons[feature]}</div>
+                    <div style="font-size: 11px;">${feature}</div>
+                    <div style="font-size: 10px;">HIGH</div>
+                </div>
+                <div class="card-back">
+                    <div class="feature-icon">${featureIcons[feature]}</div>
+                    <div style="font-size: 11px;">${feature}</div>
+                    <div style="font-size: 10px;">LOW</div>
+                </div>
+            `;
+            
+            const numberSpan = cell.querySelector('.cell-number');
+            if (numberSpan) {
+                numberSpan.insertAdjacentElement('afterend', card);
+            } else {
+                cell.appendChild(card);
+            }
+            
+            cell.classList.add('occupied');
+        }
+
+        // Flip card functions
+        function flipCard(card, row, col, method) {
+            card.classList.toggle('flipped');
+            if (method === 'method1') {
+                method1Rules[`${row}-${col}`].isHigh = !method1Rules[`${row}-${col}`].isHigh;
+            }
+        }
+
+        function flipCardMethod2(card, cellIndex, type) {
+            card.classList.toggle('flipped');
+            method2Rules[type][cellIndex].isHigh = !method2Rules[type][cellIndex].isHigh;
+        }
+
+        // Main simulation function
+        function simulate() {
+            if (currentMethod === 1) {
+                simulateMethod1();
+            } else {
+                simulateMethod2();
+            }
+        }
+
+        // Method 1: Binary Classification
+        function simulateMethod1() {
+        if (!selectedType) {
+            alert('Please select a Pokemon type first!');
+            return;
+        }
+        if (Object.keys(method1Rules).length === 0) {
+            alert('Please place at least one feature card on the grid!');
+            return;
+        }
+
+        const THRESHOLD_PERCENT = 60;
+        let truePositive = 0;
+        let trueNegative = 0;
+        let falsePositive = 0;
+        let falseNegative = 0;
+
+        const predictions = pokemonDataset.map(pokemon => {
+            let matchCount = 0;
+            const totalRules = Object.keys(method1Rules).length;
+
+            for (const ruleKey in method1Rules) {
+                const rule = method1Rules[ruleKey];
+                const actualHigh = isFeatureHigh(rule.feature, pokemon[rule.feature]);
+                if (rule.isHigh === actualHigh) {
+                    matchCount++;
+                }
+            }
+
+            const matchPercentage = (matchCount / totalRules) * 100;
+            const predictedAsType = matchPercentage >= THRESHOLD_PERCENT;
+            const actualIsType = (pokemon.CorrectType === selectedType);
+
+            if (predictedAsType && actualIsType) truePositive++;
+            else if (!predictedAsType && !actualIsType) trueNegative++;
+            else if (predictedAsType && !actualIsType) falsePositive++;
+            else if (!predictedAsType && actualIsType) falseNegative++;
+
+            return {
+                ...pokemon,
+                matchPercentage,
+                predictedAsType,
+                actualIsType
+            };
+        });
+
+        displayMethod1Results(predictions, truePositive, trueNegative, falsePositive, falseNegative);
+    }
+    
+        // Method 2: Multi-class Classification
+        function simulateMethod2() {
+        const THRESHOLD_PERCENT = 60;
+
+        const predictions = pokemonDataset.map(pokemon => {
+            const scores = {
+                fire: 0,
+                water: 0,
+                grass: 0,
+                dragon: 0
+            };
+
+            ['fire','water','grass','dragon'].forEach(type => {
+                const rulesForType = method2Rules[type];
+                const totalRules = Object.keys(rulesForType).length;
+                if (totalRules === 0) {
+                    scores[type] = 0;
+                    return;
+                }
+                let matchCount = 0;
+                for (const position in rulesForType) {
+                    const rule = rulesForType[position];
+                    const actualHigh = isFeatureHigh(rule.feature, pokemon[rule.feature]);
+                    if (rule.isHigh === actualHigh) {
+                        matchCount++;
+                    }
+                }
+                scores[type] = (matchCount / totalRules) * 100;
+            });
+
+            // Sort descending by score:
+            const allScores = Object.entries(scores).sort((a, b) => b[1] - a[1]);
+            const topScore = allScores[0][1];
+            const topTypes = allScores
+                .filter(([t,s]) => s === topScore && s >= THRESHOLD_PERCENT)
+                .map(([t,_]) => t);
+
+            let predictionStatus;
+            if (topScore < THRESHOLD_PERCENT) {
+                predictionStatus = 'no-match';
+            } else if (topTypes.length > 1) {
+                predictionStatus = 'multiple-match';
+            } else {
+                predictionStatus = (topTypes[0] === pokemon.CorrectType) ? 'correct' : 'incorrect';
+            }
+
+            return {
+                ...pokemon,
+                scores,
+                matchingTypes: topTypes,
+                predictionStatus
+            };
+        });
+
+        displayMethod2Results(predictions);
+        }
+
+        // Display results for Method 1
+        function displayMethod1Results(predictions, tp, tn, fp, fn) {
+            const resultsSection = document.getElementById('results-section');
+            const resultsContent = document.getElementById('results-content');
+            
+            resultsSection.style.display = 'block';
+            
+            const accuracy = ((tp + tn) / pokemonDataset.length * 100).toFixed(1);
+            const precision = tp > 0 ? (tp / (tp + fp) * 100).toFixed(1) : 0;
+            const recall = tp > 0 ? (tp / (tp + fn) * 100).toFixed(1) : 0;
+            
+            resultsContent.innerHTML = `
+                <h4>Binary Classification Results for ${selectedType.toUpperCase()}</h4>
+                
+                <div class="stats-grid">
+                    <div class="stat-card">
+                        <div class="stat-value">${accuracy}%</div>
+                        <div class="stat-label">Accuracy</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-value">${precision}%</div>
+                        <div class="stat-label">Precision</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-value">${recall}%</div>
+                        <div class="stat-label">Recall</div>
+                    </div>
+                </div>
+                
+                <div class="confusion-matrix">
+                    <h4>Confusion Matrix</h4>
+                    <table>
+                        <tr>
+                            <th colspan="2" rowspan="2">Actual vs Predicted</th>
+                            <th colspan="2">Predicted</th>
+                        </tr>
+                        <tr>
+                            <th>${selectedType}</th>
+                            <th>Not ${selectedType}</th>
+                        </tr>
+                        <tr>
+                            <th rowspan="2">Actual</th>
+                            <th>${selectedType}</th>
+                            <td class="correct-prediction">${tp}</td>
+                            <td class="incorrect-prediction">${fn}</td>
+                        </tr>
+                        <tr>
+                            <th>Not ${selectedType}</th>
+                            <td class="incorrect-prediction">${fp}</td>
+                            <td class="correct-prediction">${tn}</td>
+                        </tr>
+                    </table>
+                </div>
+                
+                <h4>Pokemon Predictions</h4>
+                <div class="pokemon-results">
+                    ${predictions.map(p => `
+                        <div class="pokemon-card" style="border-left: 4px solid ${
+                            (p.predictedAsType && p.actualIsType) || (!p.predictedAsType && !p.actualIsType) 
+                            ? '#4caf50' : '#f44336'
+                        }">
+                            <div class="pokemon-name">${p.name}</div>
+                            <div class="pokemon-prediction">
+                                Predicted: ${p.predictedAsType ? selectedType : 'Not ' + selectedType}
+                            </div>
+                            <div style="font-size: 12px; color: #666;">
+                                Actual: ${p.CorrectType}
+                            </div>
+                            <div style="font-size: 12px; color: #999;">
+                                Match: ${p.matchPercentage.toFixed(0)}%
+                            </div>
+                        </div>
+                    `).join('')}
+                </div>
+            `;
+        }
+
+        // Display results for Method 2
+        function displayMethod2Results(predictions) {
+            const resultsSection = document.getElementById('results-section');
+            const resultsContent = document.getElementById('results-content');
+            
+            resultsSection.style.display = 'block';
+            
+            const correct = predictions.filter(p => p.predictionStatus === 'correct').length;
+            const noMatch = predictions.filter(p => p.predictionStatus === 'no-match').length;
+            const multipleMatch = predictions.filter(p => p.predictionStatus === 'multiple-match').length;
+            const incorrect = predictions.filter(p => p.predictionStatus === 'incorrect').length;
+            
+            resultsContent.innerHTML = `
+                <h4>Multi-Type Classification Results</h4>
+                
+                <div class="stats-grid">
+                    <div class="stat-card">
+                        <div class="stat-value" style="color: #4caf50;">${correct}</div>
+                        <div class="stat-label">Correct Matches</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-value" style="color: #f44336;">${incorrect}</div>
+                        <div class="stat-label">Wrong Type</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-value" style="color: #ff9800;">${multipleMatch}</div>
+                        <div class="stat-label">Multiple Matches</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-value" style="color: #9e9e9e;">${noMatch}</div>
+                        <div class="stat-label">No Matches</div>
+                    </div>
+                </div>
+                
+                <h4>Pokemon Classifications</h4>
+                <div class="pokemon-results">
+                    ${predictions.map(p => {
+                        let statusColor, statusText;
+                        if (p.predictionStatus === 'correct') {
+                            statusColor = '#4caf50';
+                            statusText = '✓ Correct';
+                        } else if (p.predictionStatus === 'no-match') {
+                            statusColor = '#9e9e9e';
+                            statusText = '⚪ No Match';
+                        } else if (p.predictionStatus === 'multiple-match') {
+                            statusColor = '#ff9800';
+                            statusText = '⚠️ Multiple';
+                        } else {
+                            statusColor = '#f44336';
+                            statusText = '✗ Wrong';
+                        }
+                        
+                        return `
+                        <div class="pokemon-card" style="border-left: 4px solid ${statusColor}">
+                            <div class="pokemon-name">${p.name}</div>
+                            <div style="font-size: 12px; color: ${statusColor}; font-weight: bold;">
+                                ${statusText}
+                            </div>
+                            <div style="font-size: 12px; color: #666;">
+                                Actual: ${p.CorrectType}
+                            </div>
+                            <div style="font-size: 12px; color: #999;">
+                                Matches: ${p.matchingTypes.join(', ') || 'None'}
+                            </div>
+                        </div>
+                    `}).join('')}
+                </div>
+            `;
+        }
+
+        // Reset game
+        function resetGame() {
+            // Clear all grids
+            document.querySelectorAll('.grid-cell:not(.center)').forEach(cell => {
+                const featureCard = cell.querySelector('.feature-card');
+                if (featureCard) {
+                    featureCard.remove();
+                }
+                cell.classList.remove('occupied');
+            });
+            
+            // Show all feature items
+            document.querySelectorAll('.feature-item').forEach(item => {
+                item.style.display = 'block';
+            });
+            
+            // Reset state
+            method1Rules = {};
+            method2Rules = {
+                fire: {},
+                water: {},
+                grass: {},
+                dragon: {}
+            };
+            selectedType = null;
+            
+            if (currentMethod === 1) {
+                document.getElementById('selected-type').textContent = '?';
+                document.querySelectorAll('.type-btn').forEach(btn => btn.classList.remove('selected'));
+            }
+            
+            // Hide results
+            document.getElementById('results-section').style.display = 'none';
+        }
+
+        // Initialize game
+        initializePokemonData();
+    </script>
+</body>
+</html>
